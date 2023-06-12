@@ -13,18 +13,14 @@ namespace Assets.DrawApp.Scripts
         [SerializeField] private TextMeshProUGUI feedbackText;
         [SerializeField] private Image feedbackImage;
         [SerializeField] private LineRenderer drawRenderer;
+        [SerializeField] private float allowedDistance = .5f;
         private List<StrokeController> strokesToDo = new List<StrokeController>();
-
         private List<Vector3> dragPositions = new List<Vector3>();
-
         private Vector3 currentDragPos;
-
         private StrokeController currentStroke;
         private Segment currentSegment;
-        
-        // Stroke comparison
         private int currentStrokeIndex = 0;
-        [SerializeField] private float allowedDistance = .5f;
+        private bool canDraw;
         
         private void Awake()
         {
@@ -58,6 +54,7 @@ namespace Assets.DrawApp.Scripts
             this.dragPositions.Clear();
             this.drawRenderer.positionCount = 1;
             this.drawRenderer.SetPosition(0, Vector3.zero);
+            this.canDraw = false;
             
             // if there are uncompleted segments, reset entire stroke
             if(this.currentStroke.CheckSegmentsLeft())
@@ -79,18 +76,17 @@ namespace Assets.DrawApp.Scripts
                 strokeController.Initialize(stroke);
                 this.strokesToDo.Add(strokeController);
             }
+            this.strokesToDo[0].ShowKeypoints();
         }
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-           // Debug.Log($"Drag Begin ");
-            this.currentDragPos = this.ConvertPointerToWorldPos(eventData.position);
-            this.dragPositions.Add(currentDragPos);
+            this.canDraw = true;
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            //Debug.Log($"Dragging {eventData.position} {this.ConvertPointerToWorldPos(eventData.position)}");
+            if (!this.canDraw) return;
             this.currentDragPos = this.ConvertPointerToWorldPos(eventData.position);
             this.dragPositions.Add(currentDragPos);
             ProcessStroke();
@@ -99,8 +95,6 @@ namespace Assets.DrawApp.Scripts
 
         public void OnEndDrag(PointerEventData eventData)
         {
-           // Debug.Log("Drag Ended");
-            this.currentDragPos = this.ConvertPointerToWorldPos(eventData.position);
             this.ResetDrawing();
         }
 
@@ -119,28 +113,29 @@ namespace Assets.DrawApp.Scripts
             }
             
             this.currentStroke = this.strokesToDo[this.currentStrokeIndex];
+            this.currentStroke.ShowKeypoints();
             this.currentSegment = currentStroke.GetCurrentSegment();
             
             if (this.currentSegment.State == SegmentState.Init)
             {
                 float distanceToStart = Vector3.Distance(this.currentDragPos, currentSegment.Start);
-                Debug.Log($"{distanceToStart } distanceToStart");
 
                 if (distanceToStart < this.allowedDistance && this.currentSegment.State == SegmentState.Init)
                 {
                     this.currentSegment.State = SegmentState.Started;
                     this.feedbackText.text = $"Start...";
                 }
-            } else if (this.currentSegment.State == SegmentState.Started)
+            }
+            else if (this.currentSegment.State == SegmentState.Started)
             {
                 float distanceToLine = DistanceFromPointToLine(currentSegment.Start, currentSegment.End, this.currentDragPos);
-                Debug.Log($"{distanceToLine } distanceToLine");
 
                 // Check if user is close to the line
                 if (distanceToLine > this.allowedDistance && currentSegment.State == SegmentState.Started)
                 {
                     this.feedbackImage.color = Color.red;
                     this.feedbackText.text = $"Start again!";
+                    ResetDrawing();
                     // Inform user and restart drawing session    
                 }
                 else
@@ -151,8 +146,6 @@ namespace Assets.DrawApp.Scripts
                 
                 // Check distance to segment end and resolve
                 float distanceToEnd = Vector3.Distance(this.currentDragPos, currentSegment.End);
-                Debug.Log($"{distanceToEnd } distanceToEnd");
-
                 if (distanceToEnd < this.allowedDistance)
                 {
                     this.currentStroke.FinishSegment();
@@ -162,6 +155,7 @@ namespace Assets.DrawApp.Scripts
                         //mark segment ended, switch to next segment or stroke
                         if (this.currentStrokeIndex < this.strokesToDo.Count)
                         {
+                            this.currentStroke.HideKeypoints();
                             this.feedbackText.text = $"Stroke finished!";
                             this.currentStrokeIndex++;
                         }
@@ -174,15 +168,9 @@ namespace Assets.DrawApp.Scripts
                     else
                     {
                         this.feedbackText.text = $"Keep drawing...";
-                        // more segments
                     }
                 }
             }
-
-
-
-               
-            // this.strokesToDo[currentStrokeIndex].KeyPointPositions
         }
 
         private Vector3 ConvertPointerToWorldPos(Vector3 inputPos)

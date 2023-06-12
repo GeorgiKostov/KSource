@@ -36,6 +36,7 @@ namespace Assets.DrawApp.Scripts
                 this.keyPointPositions.Add(point.Coordinate);
                 var keyPointController = newPointViz.GetComponent<KeyPointController>();
                 keyPointController.LoadKeyPoint(KeyPointIndex);
+                keyPointController.Hide();
                 this.keypoints.Add(keyPointController);
                 KeyPointIndex++;
             }
@@ -109,6 +110,16 @@ namespace Assets.DrawApp.Scripts
             Destroy(this.gameObject);
         }
 
+        public void ShowKeypoints()
+        {
+            this.keypoints.ForEach(x=>x.Show());    
+        }
+
+        public void HideKeypoints()
+        {
+            this.keypoints.ForEach(x=>x.Hide());
+        }
+        
         private List<Vector3> GenerateLinearBezier(Vector3 start, Vector3 end)
         {
             List<Vector3> vectors = new List<Vector3>();
