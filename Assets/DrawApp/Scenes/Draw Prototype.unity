@@ -258,10 +258,12 @@ MonoBehaviour:
   persistent: 0
   letters:
   - {fileID: 11400000, guid: 933a5d8eeab562747b64d54c24ef559b, type: 2}
+  - {fileID: 11400000, guid: 4b389cec768f39f4fbb43fa057e91b0b, type: 2}
+  - {fileID: 11400000, guid: bd25410f1ca95cd4d8205d03e91d6dbe, type: 2}
+  - {fileID: 11400000, guid: b3f898c688141ab458fc7ce223ea03ed, type: 2}
   - {fileID: 11400000, guid: e35466054a7cb9a49a40205d94aeba94, type: 2}
   - {fileID: 11400000, guid: 094fa58c0c564ee4a859176722b273f7, type: 2}
   - {fileID: 11400000, guid: a0c71d3b957629648850e419fac4d854, type: 2}
-  - {fileID: 11400000, guid: bd25410f1ca95cd4d8205d03e91d6dbe, type: 2}
 --- !u!1 &135073499
 GameObject:
   m_ObjectHideFlags: 0
@@ -1647,7 +1649,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: A
+  m_text: D
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

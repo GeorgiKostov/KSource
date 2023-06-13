@@ -10,13 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cc44f186de3917a4597370a868ff3ed6, type: 3}
-  m_Name: C
+  m_Name: B
   m_EditorClassIdentifier: 
-  letter: C
+  letter: B
   strokes:
-  - Type: 1
+  - Type: 0
     KeyPoints:
-    - Coordinate: {x: 2, y: 0}
     - Coordinate: {x: 0, y: 0}
     - Coordinate: {x: 0, y: 2}
+  - Type: 1
+    KeyPoints:
+    - Coordinate: {x: 0, y: 2}
     - Coordinate: {x: 2, y: 2}
+    - Coordinate: {x: 2, y: 1}
+    - Coordinate: {x: 0, y: 1}
+  - Type: 1
+    KeyPoints:
+    - Coordinate: {x: 0, y: 1}
+    - Coordinate: {x: 2, y: 1}
+    - Coordinate: {x: 2, y: 0}
+    - Coordinate: {x: 0, y: 0}
