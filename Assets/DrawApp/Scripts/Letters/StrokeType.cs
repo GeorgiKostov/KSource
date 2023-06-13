@@ -4,6 +4,5 @@
     {
         Linear,
         CubicBezier,
-        QuadraticBezier,
     }
 }

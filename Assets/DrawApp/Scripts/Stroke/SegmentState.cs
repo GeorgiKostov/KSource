@@ -1,4 +1,4 @@
-﻿namespace Assets.DrawApp.Scripts
+﻿namespace Assets.DrawApp.Scripts.Stroke
 {
     public enum SegmentState
     {

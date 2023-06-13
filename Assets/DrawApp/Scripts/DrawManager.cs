@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Assets.DrawApp.Scripts.Letters;
+using Assets.DrawApp.Scripts.Stroke;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -13,7 +14,7 @@ namespace Assets.DrawApp.Scripts
         [SerializeField] private TextMeshProUGUI feedbackText;
         [SerializeField] private Image feedbackImage;
         [SerializeField] private LineRenderer drawRenderer;
-        [SerializeField] private float allowedDistance = .5f;
+        [SerializeField] private float tolerance = .5f;
         private List<StrokeController> strokesToDo = new List<StrokeController>();
         private List<Vector3> dragPositions = new List<Vector3>();
         private Vector3 currentDragPos;
@@ -39,7 +40,7 @@ namespace Assets.DrawApp.Scripts
         }
 
         /// <summary>
-        /// Clean up drawing
+        /// Clean up current task
         /// </summary>
         private void ResetTask()
         {
@@ -49,6 +50,9 @@ namespace Assets.DrawApp.Scripts
             //TODO: reset current drawing, despawn lines etc.
         }
 
+        /// <summary>
+        /// Clean up drawing
+        /// </summary>
         private void ResetDrawing()
         {
             this.dragPositions.Clear();
@@ -57,8 +61,11 @@ namespace Assets.DrawApp.Scripts
             this.canDraw = false;
             
             // if there are uncompleted segments, reset entire stroke
-            if(this.currentStroke.CheckSegmentsLeft())
+            if (this.currentStroke.IsStrokeComplete())
+            {
                 this.currentStroke.ResetSegments();
+                this.feedbackText.text = $"Please try again!";
+            }
         }
         
         /// <summary>
@@ -67,8 +74,6 @@ namespace Assets.DrawApp.Scripts
         /// <param name="data">The letter data</param>
         private void GenerateDrawingGoal(LetterData data)
         {
-            StrokeController.KeyPointIndex = 0;
-
             foreach (StrokeData stroke in data.Strokes)
             {
                 var newStroke = Instantiate(this.strokePrefab, transform.position, Quaternion.identity);
@@ -82,6 +87,7 @@ namespace Assets.DrawApp.Scripts
         public void OnBeginDrag(PointerEventData eventData)
         {
             this.canDraw = true;
+            this.feedbackText.text = string.Empty;
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -108,6 +114,7 @@ namespace Assets.DrawApp.Scripts
         {
             if (this.currentStrokeIndex >= this.strokesToDo.Count)
             {
+                this.feedbackImage.color = Color.green;
                 this.feedbackText.text = $"Try a new letter!";
                 return;
             }
@@ -120,54 +127,51 @@ namespace Assets.DrawApp.Scripts
             {
                 float distanceToStart = Vector3.Distance(this.currentDragPos, currentSegment.Start);
 
-                if (distanceToStart < this.allowedDistance && this.currentSegment.State == SegmentState.Init)
+                if (distanceToStart < this.tolerance && this.currentSegment.State == SegmentState.Init)
                 {
                     this.currentSegment.State = SegmentState.Started;
-                    this.feedbackText.text = $"Start...";
                 }
             }
             else if (this.currentSegment.State == SegmentState.Started)
             {
-                float distanceToLine = DistanceFromPointToLine(currentSegment.Start, currentSegment.End, this.currentDragPos);
+                float distanceToLine = 0;
+                if (this.currentStroke.StrokeData.Type == StrokeType.Linear)
+                {
+                    distanceToLine = DistanceFromPointToLine(currentSegment.Start, currentSegment.End, this.currentDragPos);
+                }
+                else if (this.currentStroke.StrokeData.Type == StrokeType.CubicBezier)
+                {
+                    distanceToLine = this.currentStroke.FindDistanceClosestPointOnCubicBezier(this.currentDragPos);
+                }
 
                 // Check if user is close to the line
-                if (distanceToLine > this.allowedDistance && currentSegment.State == SegmentState.Started)
+                if (distanceToLine > this.tolerance && currentSegment.State == SegmentState.Started)
                 {
                     this.feedbackImage.color = Color.red;
-                    this.feedbackText.text = $"Start again!";
+                    this.feedbackText.text = $"Please try again!";
                     ResetDrawing();
                     // Inform user and restart drawing session    
                 }
                 else
                 {
-                    this.feedbackText.text = $"";
-                    this.feedbackImage.color = Color.green;
+                    this.feedbackText.text = string.Empty;
+                    this.feedbackImage.color = Color.white;
                 }
                 
                 // Check distance to segment end and resolve
                 float distanceToEnd = Vector3.Distance(this.currentDragPos, currentSegment.End);
-                if (distanceToEnd < this.allowedDistance)
+                if (distanceToEnd < this.tolerance)
                 {
-                    this.currentStroke.FinishSegment();
+                    this.currentStroke.CompleteSegment();
                     // if no segments left, go to next stroke or end
-                    if (!this.currentStroke.CheckSegmentsLeft())
+                    if (!this.currentStroke.IsStrokeComplete())
                     {
                         //mark segment ended, switch to next segment or stroke
                         if (this.currentStrokeIndex < this.strokesToDo.Count)
                         {
                             this.currentStroke.HideKeypoints();
-                            this.feedbackText.text = $"Stroke finished!";
                             this.currentStrokeIndex++;
                         }
-                        else
-                        {
-                            // if no more strokes, mark letter as finished
-                            this.feedbackImage.color = Color.blue;
-                        }
-                    }
-                    else
-                    {
-                        this.feedbackText.text = $"Keep drawing...";
                     }
                 }
             }

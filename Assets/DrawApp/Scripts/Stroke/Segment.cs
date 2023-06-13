@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Assets.DrawApp.Scripts
+namespace Assets.DrawApp.Scripts.Stroke
 {
     [Serializable]
     public class Segment

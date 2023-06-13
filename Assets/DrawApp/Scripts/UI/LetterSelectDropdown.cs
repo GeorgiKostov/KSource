@@ -2,7 +2,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace Assets.DrawApp.Scripts
+namespace Assets.DrawApp.Scripts.UI
 {
     public class LetterSelectDropdown:MonoBehaviour
     {

@@ -1,7 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 
-namespace Assets.DrawApp.Scripts
+namespace Assets.DrawApp.Scripts.Stroke
 {
     public class KeyPointController : MonoBehaviour
     {
