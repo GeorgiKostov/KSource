@@ -2147,7 +2147,8 @@ MonoBehaviour:
   feedbackText: {fileID: 1619090527}
   feedbackImage: {fileID: 496329975}
   drawRenderer: {fileID: 1402949397}
-  tolerance: 0.15
+  tolerance: 0.6
+  endTolerance: 0.15
 --- !u!1 &755365391
 GameObject:
   m_ObjectHideFlags: 0

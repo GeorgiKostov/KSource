@@ -15,6 +15,8 @@ namespace Assets.DrawApp.Scripts
         [SerializeField] private Image feedbackImage;
         [SerializeField] private LineRenderer drawRenderer;
         [SerializeField] private float tolerance = .5f;
+        [SerializeField] private float endTolerance = .2f;
+
         private List<StrokeController> strokesToDo = new List<StrokeController>();
         private List<Vector3> dragPositions = new List<Vector3>();
         private Vector3 currentDragPos;
@@ -35,6 +37,7 @@ namespace Assets.DrawApp.Scripts
 
         private void LetterManagerOnOnLetterSelected(LetterData obj)
         {
+            StrokeController.KeyIndex = 0;
             ResetTask();
             GenerateDrawingGoal(obj);
         }
@@ -47,7 +50,6 @@ namespace Assets.DrawApp.Scripts
             this.strokesToDo.ForEach(x=>x.Dispose());
             this.strokesToDo.Clear();
             this.currentStrokeIndex = 0;
-            //TODO: reset current drawing, despawn lines etc.
         }
 
         /// <summary>
@@ -141,16 +143,16 @@ namespace Assets.DrawApp.Scripts
                 }
                 else if (this.currentStroke.StrokeData.Type == StrokeType.CubicBezier)
                 {
-                    distanceToLine = this.currentStroke.FindDistanceClosestPointOnCubicBezier(this.currentDragPos);
+                    distanceToLine = this.currentStroke.GetDistanceClosestPointOnCubicBezier(this.currentDragPos);
                 }
 
                 // Check if user is close to the line
                 if (distanceToLine > this.tolerance && currentSegment.State == SegmentState.Started)
                 {
+                    // Inform user and restart drawing session    
                     this.feedbackImage.color = Color.red;
                     this.feedbackText.text = $"Please try again!";
                     ResetDrawing();
-                    // Inform user and restart drawing session    
                 }
                 else
                 {
@@ -160,7 +162,7 @@ namespace Assets.DrawApp.Scripts
                 
                 // Check distance to segment end and resolve
                 float distanceToEnd = Vector3.Distance(this.currentDragPos, currentSegment.End);
-                if (distanceToEnd < this.tolerance)
+                if (distanceToEnd < this.endTolerance)
                 {
                     this.currentStroke.CompleteSegment();
                     // if no segments left, go to next stroke or end

@@ -18,6 +18,7 @@ namespace Assets.DrawApp.Scripts.Stroke
         private StrokeData strokeData;
         private int currentSegment;
         public StrokeData StrokeData => this.strokeData;
+        public static int KeyIndex = 0;
 
         public void Initialize(StrokeData data)
         {
@@ -52,11 +53,11 @@ namespace Assets.DrawApp.Scripts.Stroke
                 {
                     var newPointViz = Instantiate(this.keyPointPrefab, keyPointsOnCubicBezier[i], quaternion.identity);
                     var keyPointController = newPointViz.GetComponent<KeyPointController>();
-                    keyPointController.LoadKeyPoint(i);
+                    keyPointController.LoadKeyPoint(KeyIndex);
                     keyPointController.Hide();
                     this.keypoints.Add(keyPointController);
+                    KeyIndex++;
                 }
-                
             }
             else if(this.strokeData.Type == StrokeType.Linear)
             {
@@ -77,18 +78,19 @@ namespace Assets.DrawApp.Scripts.Stroke
                 {
                     var newPointViz = Instantiate(this.keyPointPrefab, this.strokeData.KeyPoints[i].Coordinate, quaternion.identity);
                     var keyPointController = newPointViz.GetComponent<KeyPointController>();
-                    keyPointController.LoadKeyPoint(i);
+                    keyPointController.LoadKeyPoint(KeyIndex);
                     keyPointController.Hide();
                     this.keypoints.Add(keyPointController);
+                    KeyIndex++;
                 }
             }
 
-            // Generate line
+            // Draw example line
             this.line.positionCount = this.linePositions.Count;
             this.line.SetPositions(this.linePositions.ToArray());
-            
-            // Create logical segments
-
+            // Simplify line to avoid weird edges
+            if(this.strokeData.Type == StrokeType.Linear)
+                this.line.Simplify(1);
         }
 
         public Segment GetCurrentSegment()
@@ -118,9 +120,6 @@ namespace Assets.DrawApp.Scripts.Stroke
         private void CompleteStroke()
         {
             this.line.material = this.completedLineMat;
-            // Simplify line to avoid weird edges
-            if(this.strokeData.Type == StrokeType.Linear)
-                this.line.Simplify(1);
         }
 
         public void ResetSegments()
@@ -176,7 +175,7 @@ namespace Assets.DrawApp.Scripts.Stroke
             return points;
         }
         
-        public float FindDistanceClosestPointOnCubicBezier(Vector3 point)
+        public float GetDistanceClosestPointOnCubicBezier(Vector3 point)
         {
             float closestDistSqr = Mathf.Infinity;
             Vector3 closestPoint = Vector3.zero;
